@@ -9,8 +9,6 @@ import "@openzeppelin/contracts/token/ERC721x/ERC721x.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GML is ERC721x, Ownable {
-
-
   using Strings for uint256;
 
   string public baseURI;
@@ -24,11 +22,13 @@ contract GML is ERC721x, Ownable {
   mapping(address => uint256) public lastClaim;
   uint256[] public doublingEvents;
 
-
   constructor(
     string memory _name,
     string memory _symbol,
     string memory _initBaseURI
+  ) ERC721x(_name, _symbol) {
+    setBaseURI(_initBaseURI);
+    mint(msg.sender, 1, 20);
     uint256 currentTime = block.timestamp;
 
     // 2023: Double every month (12 times total)
@@ -57,11 +57,6 @@ contract GML is ERC721x, Ownable {
     for (uint256 i = 0; i < 4; i++) {
         doublingEvents.push(currentTime + 365 days * i);
     }
-
-  
-  ) ERC721(_name, _symbol) {
-    setBaseURI(_initBaseURI);
-    mint(msg.sender, 20);
   }
 
   // internal
@@ -70,7 +65,7 @@ contract GML is ERC721x, Ownable {
   }
 
   // public
-  function mint(address _to, uint256 _tokenId, uint256 _mintAmount) public payable {
+  function mint(address _to, uint256 _mintAmount) public payable {
     uint256 supply = totalSupply();
     require(!paused);
     require(_mintAmount > 0);
@@ -83,15 +78,9 @@ contract GML is ERC721x, Ownable {
         }
     }
 
-    for (uint256 i = 1; i <= _mintAmount; i++) {
-      _safeMint(_to, supply + i);
-    }
-
-
-    _mint(_to, _tokenId, _mintAmount);
-  
+    _mint(_to, currentTokenId, _mintAmount);
+    currentTokenId++;
   }
-
 
   function walletOfOwner(address _owner)
     public
@@ -111,7 +100,7 @@ contract GML is ERC721x, Ownable {
     view
     virtual
     override
-    returns (string memory)
+    returns (string memory) 
   {
     require(
       _exists(tokenId),
@@ -145,7 +134,7 @@ contract GML is ERC721x, Ownable {
     paused = _state;
   }
  
- function whitelistUser(address _user) public onlyOwner {
+  function whitelistUser(address _user) public onlyOwner {
     whitelisted[_user] = true;
   }
  
@@ -158,10 +147,11 @@ contract GML is ERC721x, Ownable {
   }
 
   function claimTokens() public {
-      require(balanceOf(msg.sender, _tokenId) > 0, "No tokens to claim");
+      require(balanceOf(msg.sender, currentTokenId) > 0, "No tokens to claim");
       require(lastClaim[msg.sender] < doublingEvents[doublingEvents.length - 1], "No tokens to claim");
-      _mint(msg.sender, _tokenId, balanceOf(msg.sender, _tokenId));
-      lastClaim[msg.sender] = block.timestamp;
+      _mint(msg.sender, currentTokenId, balanceOf(msg.sender, currentTokenId));
+      currentTokenId++;
+      lastClaim[.sender] = block.timestamp;
   }
 
 }
