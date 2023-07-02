@@ -5,11 +5,11 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721x/ERC721x.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract GML is ERC721Enumerable, Ownable {
+contract GML is ERC721x, Ownable {
+
 
   using Strings for uint256;
 
@@ -70,7 +70,7 @@ contract GML is ERC721Enumerable, Ownable {
   }
 
   // public
-  function mint(address _to, uint256 _mintAmount) public payable {
+  function mint(address _to, uint256 _tokenId, uint256 _mintAmount) public payable {
     uint256 supply = totalSupply();
     require(!paused);
     require(_mintAmount > 0);
@@ -86,7 +86,12 @@ contract GML is ERC721Enumerable, Ownable {
     for (uint256 i = 1; i <= _mintAmount; i++) {
       _safeMint(_to, supply + i);
     }
+
+
+    _mint(_to, _tokenId, _mintAmount);
+  
   }
+
 
   function walletOfOwner(address _owner)
     public
@@ -153,9 +158,9 @@ contract GML is ERC721Enumerable, Ownable {
   }
 
   function claimTokens() public {
-      require(balanceOf(msg.sender) > 0, "No tokens to claim");
+      require(balanceOf(msg.sender, _tokenId) > 0, "No tokens to claim");
       require(lastClaim[msg.sender] < doublingEvents[doublingEvents.length - 1], "No tokens to claim");
-      _mint(msg.sender, balanceOf(msg.sender));
+      _mint(msg.sender, _tokenId, balanceOf(msg.sender, _tokenId));
       lastClaim[msg.sender] = block.timestamp;
   }
 
