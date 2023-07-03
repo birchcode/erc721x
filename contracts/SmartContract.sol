@@ -7,6 +7,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721x/ERC721x.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./ERC721XToken.sol";
 
 contract GML is ERC721x, Ownable {
   using Strings for uint256;
